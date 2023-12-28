@@ -14,7 +14,9 @@ CREATE TABLE users
     password  varchar(255)                   not null,
     recover   varchar(255)                   not null,
     avatar    varchar(255)                   not null default 'https://0sc4r24sisdis2024.s3.amazonaws.com/UZNjvpZW_400x400.jpg',
-    biography varchar(255)                   not null default 'Sin biografia'
+    biography varchar(255)                   not null default 'Sin biografia',
+    validated boolean                        not null default true,
+    tries     int                            not null default 0
 );
 
 CREATE TABLE messages
@@ -57,8 +59,8 @@ CREATE TABLE replies
 
 -- Insertar datos de prueba
 INSERT INTO users
-values (NULL, 'admin', 'admin@admin.es', 'admin', 'admin 12345 67890', 'https://0sc4r24sisdis2024.s3.amazonaws.com/UZNjvpZW_400x400.jpg', 'Administrador'),
-       (NULL, 'user', 'user@user.es', 'user', 'user 12345 67890', 'https://0sc4r24sisdis2024.s3.amazonaws.com/UZNjvpZW_400x400.jpg', 'Usuario');
+values (NULL, 'admin', 'admin@admin.es', 'admin', 'admin 12345 67890', 'https://0sc4r24sisdis2024.s3.amazonaws.com/UZNjvpZW_400x400.jpg', 'Administrador', true, 0),
+       (NULL, 'usuario', 'usuario@usuario.es', 'usuario', 'usuario 12345 67890', 'https://0sc4r24sisdis2024.s3.amazonaws.com/UZNjvpZW_400x400.jpg', 'Usuario', true, 0);
 
 INSERT INTO messages
 values (NULL, 1, 'Mensaje de prueba 1', 'https://0sc4r24sisdis2024.s3.amazonaws.com/UZNjvpZW_400x400.jpg', current_timestamp),

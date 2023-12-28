@@ -39,25 +39,49 @@ def lambda_handler(event, context):
             'body': "Missing username or password"
         }
 
+    # Variables de control
     lg_id = None
+    lg_validated = True
+    lg_password_wrong = False
+
+    # Variables de verificacion
     lg_username = body.get("username")
     lg_password = body.get("password")  # Ya tiene que estar encriptada en el cliente
 
     conn = pymysql.connect(rds_host, user=username, passwd=password, db=database, connect_timeout=5)
     cursor = conn.cursor()
 
-    query = "SELECT id FROM users WHERE username = %s AND password = %s"
-    cursor.execute(query, (lg_username, lg_password))
+    cursor.execute("SELECT id, password, validated FROM users WHERE username = %s", (lg_username,))
 
-    if cursor.rowcount != 0: lg_id = cursor.fetchone()[0]
+    if cursor.rowcount != 0:
+        lg_id, lg_password_bbdd, lg_validated = cursor.fetchone()
+        if lg_password != lg_password_bbdd: lg_password_wrong = True
+
+    if lg_password_wrong and cursor.execute("SELECT tries FROM users WHERE username = %s", (lg_username,)) == 1:
+        tries = cursor.fetchone()[0]
+        if tries < 3: cursor.execute("UPDATE users SET tries = %s WHERE username = %s", (tries + 1, lg_username))
+        else: cursor.execute("UPDATE users SET tries = %s, validated = 0 WHERE username = %s", (3, lg_username))
+        conn.commit()
 
     cursor.close()
     conn.close()
 
+    if not lg_validated: return {
+        'statusCode': 400,
+        'headers': {'Access-Control-Allow-Origin': '*'},
+        'body': "User not validated. Contact an administrator"
+    }
+
+    if lg_password_wrong: return {
+        'statusCode': 400,
+        'headers': {'Access-Control-Allow-Origin': '*'},
+        'body': "Incorrect password"
+    }
+
     if not lg_id: return {
         'statusCode': 400,
         'headers': {'Access-Control-Allow-Origin': '*'},
-        'body': "Incorrect username or password"
+        'body': "Incorrect username"
     }
 
     return {
