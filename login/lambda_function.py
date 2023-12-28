@@ -1,4 +1,5 @@
 import json
+from datetime import timedelta, datetime
 
 import jwt
 import pymysql
@@ -30,9 +31,7 @@ def lambda_handler(event, context):
 
     print(event)
 
-    logged = False
-    body = json.loads(event["body"])
-
+    body = json.loads(event.get("body", "{}"))
     if "username" not in body or "password" not in body:
         return {
             'statusCode': 400,
@@ -40,25 +39,22 @@ def lambda_handler(event, context):
             'body': "Missing username or password"
         }
 
+    lg_id = None
     lg_username = body.get("username")
     lg_password = body.get("password")  # Ya tiene que estar encriptada en el cliente
-
-    print(body)
-    print(lg_username)
-    print(lg_password)
 
     conn = pymysql.connect(rds_host, user=username, passwd=password, db=database, connect_timeout=5)
     cursor = conn.cursor()
 
-    query = "SELECT * FROM users WHERE username = %s AND password = %s"
+    query = "SELECT id FROM users WHERE username = %s AND password = %s"
     cursor.execute(query, (lg_username, lg_password))
 
-    if cursor.rowcount != 0: logged = True
+    if cursor.rowcount != 0: lg_id = cursor.fetchone()[0]
 
     cursor.close()
     conn.close()
 
-    if not logged: return {
+    if not lg_id: return {
         'statusCode': 400,
         'headers': {'Access-Control-Allow-Origin': '*'},
         'body': "Incorrect username or password"
@@ -67,5 +63,5 @@ def lambda_handler(event, context):
     return {
         'statusCode': 200,
         'headers': {'Access-Control-Allow-Origin': '*'},
-        'body': jwt.encode({"username": lg_username, "password": lg_password}, SECRET, algorithm="HS256")
+        'body': jwt.encode({"id": lg_id, 'exp': (datetime.now() + timedelta(days=1)).timestamp()}, SECRET, algorithm="HS256")  # Token con expiracion de 1 dia y el id del usuario
     }
