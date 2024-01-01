@@ -34,7 +34,8 @@ CREATE TABLE followers
     user_id      int not null,
     following_id int not null,
     foreign key (user_id) references users (id),
-    foreign key (following_id) references users (id)
+    foreign key (following_id) references users (id),
+    unique key (user_id, following_id)
 );
 
 CREATE TABLE likes
