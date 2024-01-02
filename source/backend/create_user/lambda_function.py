@@ -55,10 +55,11 @@ def lambda_handler(event, context):
     }
 
     # Suponemos que cursor execute verifica el SQL Injection (revisarlo en futuro)
-    query = "INSERT INTO users (username, email, password, recover, avatar, biography) VALUES (%s, %s, %s, %s, %s, %s)"
-    if cursor.execute(query, (rg_username, rg_email, rg_password, rg_recover, rg_avatar, rg_biography)) == 1:
-        error_value = None
-        conn.commit()
+    try:
+        if cursor.execute("INSERT INTO users (username, email, password, recover, avatar, biography) VALUES (%s, %s, %s, %s, %s, %s)", (rg_username, rg_email, rg_password, rg_recover, rg_avatar, rg_biography)) == 1:
+            error_value = None
+            conn.commit()
+    except: pass
 
     cursor.close()
     conn.close()
