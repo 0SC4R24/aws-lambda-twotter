@@ -44,7 +44,8 @@ CREATE TABLE likes
     user_id    int                      not null,
     type       enum ('like', 'dislike') not null,
     foreign key (message_id) references messages (id),
-    foreign key (user_id) references users (id)
+    foreign key (user_id) references users (id),
+    unique key (message_id, user_id)
 );
 
 CREATE TABLE replies
