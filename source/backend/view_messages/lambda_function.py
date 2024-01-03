@@ -34,6 +34,7 @@ def lambda_handler(event, context):
     body = json.loads(event.get("body", "{}"))
 
     limit = body.get('limit', 10)
+    offset = body.get('offset', 0)
 
     user_id = None if "user_id" not in body else body.get('user_id')
     message_id = None if "message_id" not in body else body.get('message_id')
@@ -64,13 +65,13 @@ def lambda_handler(event, context):
     cursor = conn.cursor()
 
     if user_token_id:
-        cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u on m.user_id = u.id JOIN followers as f on m.user_id = f.following_id where f.user_id = %s LIMIT %s', (user_token_id, limit))
+        cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u on m.user_id = u.id JOIN followers as f on m.user_id = f.following_id where f.user_id = %s ORDER BY m.datetime DESC LIMIT %s', (user_token_id, limit))
     elif user_id:
-        cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u ON m.user_id = u.id where user_id=%s LIMIT %s', (user_id, limit))
+        cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u ON m.user_id = u.id where user_id=%s ORDER BY m.datetime DESC LIMIT %s', (user_id, limit))
     elif message_id:
-        cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u ON m.user_id = u.id where m.id=%s LIMIT %s', (message_id, limit))
+        cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u ON m.user_id = u.id where m.id=%s ORDER BY m.datetime DESC LIMIT %s', (message_id, limit))
     else:
-        cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u ON m.user_id = u.id LIMIT %s', (limit,))
+        cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u ON m.user_id = u.id ORDER BY m.datetime DESC LIMIT %s', (limit,))
 
     messages = [
         {

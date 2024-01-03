@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Twitter-like Homepage</title>
+    <title>Twotter</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
@@ -142,10 +142,21 @@
             fetch(lambda,
                 {
                     method: 'POST',
-                    // body: JSON.stringify({token: localStorage.getItem('token')})
+                    body: JSON.stringify({token: localStorage.getItem('token')})
                 }
             )
-                .then(response => response.json())
+                .then(response => response.ok ? response.json() : undefined)
+                .then(response => {
+                    if (response === undefined) {
+                        return fetch(lambda,
+                            {
+                                method: 'POST',
+                                // body: JSON.stringify({token: localStorage.getItem('token')})
+                            }
+                        )
+                            .then(response => response.ok ? response.json() : [])
+                    } else return response
+                })
                 .then(response => {
                     response.map((twot) => {
                         document.getElementById('twots').innerHTML += `
