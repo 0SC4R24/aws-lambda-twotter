@@ -39,17 +39,19 @@ def lambda_handler(event, context):
     cursor = conn.cursor()
 
     if user_id:
-        cursor.execute('SELECT * FROM messages where user_id=%s LIMIT %s', (user_id, limit))
+        cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u ON m.user_id = u.id where user_id=%s LIMIT %s', (user_id, limit))
     else:
-        cursor.execute('SELECT * FROM messages LIMIT %s', (limit,))
+        cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u ON m.user_id = u.id LIMIT %s', (limit,))
 
     messages = [
         {
-            'message_id': x[0],
-            'user_id': x[1],
-            'message': x[2],
-            'adjunct': x[3],
-            'timestamp': x[4].timestamp()
+            'username': x[0],
+            'avatar': x[1],
+            'user_id': x[2],
+            'message_id': x[3],
+            'message': x[4],
+            'adjunct': x[5],
+            'timestamp': x[6].timestamp()
         } for x in cursor.fetchall()
     ]
 

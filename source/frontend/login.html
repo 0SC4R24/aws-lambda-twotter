@@ -75,6 +75,10 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
 <script>
+    document.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') submit()
+    })
+
     function submit() {
         let lambda = 'https://ailqhjmolxolj2hybwkkuph4su0heigf.lambda-url.us-east-1.on.aws/'
         let formulario = {

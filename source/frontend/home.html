@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twitter-like Homepage</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e6ecf0;
+        }
+
+        .main-content {
+            margin-top: 20px;
+        }
+
+        .sidebar {
+            border-right: 1px solid #e6ecf0;
+        }
+
+        .feed {
+            border-right: 1px solid #e6ecf0;
+        }
+
+        .trending {
+            padding: 10px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #ffffff;
+            border-top: 1px solid #e6ecf0;
+            text-align: center;
+        }
+
+        .tweet-card {
+            border: 1px solid #e1e8ed;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background-color: #fff;
+        }
+
+        .media {
+            padding: 10px;
+        }
+
+        .media-body {
+            flex: 1;
+        }
+
+        .tweet-content {
+            margin-left: 10px;
+        }
+
+        .tweet-avatar {
+            border-radius: 50%;
+        }
+
+        .tweet-username {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .tweet-time {
+            font-size: 0.85rem;
+            color: #657786;
+        }
+
+        .tweet-message {
+            margin-top: 5px;
+        }
+    </style>
+
+    <script>
+        function timestamp_to_date(timestamp) {
+            // Create a new date object from the timestamp
+            // The timestamp is expected to be in seconds, JavaScript Date requires milliseconds
+            var date = new Date(timestamp * 1000);
+
+            // You can format the date however you prefer
+            var day = date.getDate();
+            var month = date.getMonth() + 1; // Months are zero-indexed in JavaScript
+            var year = date.getFullYear();
+            var hours = date.getHours();
+            var minutes = "0" + date.getMinutes();
+            var seconds = "0" + date.getSeconds();
+
+            return day + '/' + month + '/' + year + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+        }
+
+        function cd_login() {
+            window.location.href = 'login.html'
+        }
+
+        function on_load() {
+            if (localStorage.getItem('token') === null) {
+                cd_login()
+                return
+            }
+
+            let lambda = 'https://3vyjmikqa4nuc3gcosabaiv7fa0jujfc.lambda-url.us-east-1.on.aws/'
+
+            fetch(lambda,
+                {
+                    method: 'GET'
+                }
+            )
+                .then(response => response.json())
+                .then(response => {
+                    response.map((twot) => {
+                        document.getElementById('twots').innerHTML += `
+                            <div class="tweet-card" onclick="window.location.href = './twot?id=${twot.message_id}'">
+                                <div class="media">
+                                    <input type="hidden" id="user_id" value="${twot.user_id}">
+                                    <img src="${twot.avatar}" class="align-self-start mr-3 tweet-avatar" alt="User Avatar" style="width: 48px;">
+                                    <div class="media-body tweet-content">
+                                        <h5 class="mt-0 tweet-username">${twot.username}</h5>
+                                        <p class="tweet-time">${timestamp_to_date(twot.timestamp)}</p>
+                                        <p class="tweet-message">
+                                            ${twot.message}
+                                        </p>
+                                        <img src="${twot.adjunct}">
+                                    </div>
+                                </div>
+                            </div>
+                    `
+                    })
+                })
+        }
+
+        function logout() {
+            localStorage.removeItem('token')
+            cd_login()
+        }
+    </script>
+
+</head>
+<body class="d-flex flex-column" onload="on_load()">
+
+<nav class="sticky-top navbar navbar-expand-lg navbar-light">
+    <div class="container">
+        <a class="navbar-brand" href="./home.html">Twotter</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="logout()">Log out</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container main-content">
+    <div class="row">
+        <div class="col" id="twots"></div>
+    </div>
+</div>
+
+<footer class="footer mt-auto">
+    <div class="container">
+        <span>&copy; 2024 Twotter. All rights reserved.</span>
+    </div>
+</footer>
+
+<!-- Bootstrap JS, Popper.js, and jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.7.19/dist/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>
