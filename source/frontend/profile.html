@@ -102,6 +102,55 @@
         .btn-primary:focus, .btn-secondary:focus {
             box-shadow: none;
         }
+
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .profile-header-container {
+            background-color: #fff;
+            border: 1px solid #e6ecf0;
+            border-radius: 0.25rem;
+            margin-bottom: 20px; /* additional space between sections */
+        }
+
+        .profile-info {
+            padding: 20px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            border-radius: 50%;
+        }
+
+        .username {
+            font-weight: bold;
+        }
+
+        .follow-details {
+            color: #333;
+            margin-top: 10px; /* additional spacing */
+        }
+
+        .suggestions {
+            background-color: #fff;
+            border: 1px solid #e6ecf0;
+            border-radius: 0.25rem;
+            padding: 20px;
+        }
+
+        .suggestion {
+            padding: 10px 0;
+            border-top: 1px solid #e6ecf0;
+        }
+
+        .suggestion:first-child {
+            border-top: none;
+        }
+
+        .suggestion + .suggestion {
+            margin-top: 15px; /* additional spacing */
+        }
     </style>
 
     <script>
@@ -109,7 +158,6 @@
             dislike_off = '<i class="bi bi-heartbreak"></i>',
             heart_on = '<i class="bi bi-heart-fill"></i>',
             heart_off = '<i class="bi bi-heart"></i>'
-
 
         function timestamp_to_date(timestamp) {
             // Create a new date object from the timestamp
@@ -145,99 +193,87 @@
 
             let lambda = 'https://3vyjmikqa4nuc3gcosabaiv7fa0jujfc.lambda-url.us-east-1.on.aws/',
                 lambda_likes = 'https://jg22cj44kwhjtigfplrvzcn3ou0mfnwx.lambda-url.us-east-1.on.aws/',
-                lambda_replies = 'https://stcxxogs4p5ofxie7cl564hcom0rfvcx.lambda-url.us-east-1.on.aws'
+                lambda_user = 'https://afaeu2bysojgblo3t5dpajfabe0pghno.lambda-url.us-east-1.on.aws/'
             const urlParams = new URLSearchParams(window.location.search);
             let formulario = {
-                message_id: urlParams.get('id')
+                user_id: urlParams.get('id')
             }
 
-            fetch(lambda_replies,
+            fetch(lambda_user,
                 {
                     method: 'POST',
                     body: JSON.stringify(formulario)
 
                 }
             )
-                .then(response => response.ok ? response.json() : [])
-                .then(replies => {
-                    fetch(lambda,
-                        {
-                            method: 'POST',
-                            body: JSON.stringify(formulario)
-                        }
-                    )
-                        .then(response => response.ok ? response.json() : [{
-                            username: '404 - No twot found',
-                            message: 'No twot found, go back to homepage or contact administration.',
-                            timestamp: 1704303752,
-                            adjunct: 'https://images-ext-2.discordapp.net/external/iTPn2yMohYXvu5f2JoQMcYhkYL9IWaUBleR2LlQ1KuE/%3Fse%3D2024-01-03T17%253A49%253A45Z%26sp%3Dr%26sv%3D2021-08-06%26sr%3Db%26rscc%3Dmax-age%253D31536000%252C%2520immutable%26rscd%3Dattachment%253B%2520filename%253D38674596-5486-43d9-aab4-1fe68f26b478.webp%26sig%3DLbX84LxxXcupcSazYc0AhUyDmLJljPS%252B63vNsoeY0ng%253D/https/files.oaiusercontent.com/file-onEXcUD4RN9qwN2hrYbaSpsG?format=webp&width=468&height=468',
-                            avatar: 'https://cdn-icons-png.flaticon.com/512/9205/9205233.png'
+                .then(response => response.ok ? response.json() : {
+                    "avatar": "https://media1.giphy.com/media/SsOLnh6OTU3RR4IXuq/giphy.gif?cid=ecf05e47xq0q1k5nma42t6ngsiv5xi67uoq848w12ajh7mb3&ep=v1_gifs_related&rid=giphy.gif&ct=g",
+                    "biography": "No bio yet",
+                    "email": "notfound@404.com",
+                    "id": 0,
+                    "username": "notfound404"
+                })
+                .then(response => {
+                    document.getElementById('profile_avatar').src = response.avatar
+                    document.getElementById('profile_username').innerHTML = response.username
+                    document.getElementById('profile_biography').innerHTML = response.biography
+                    document.getElementById('profile_email').innerHTML = response.email
+                })
 
-                        }])
-                        .then(response => {
-                            response.map((twot) => {
-                                document.getElementById('twots').innerHTML += `
+            fetch(lambda,
+                {
+                    method: 'POST',
+                    body: JSON.stringify(formulario)
+                }
+            )
+                .then(response => response.ok ? response.json() : [])
+                .then(response => {
+                    response.map((twot) => {
+                        document.getElementById('twots').innerHTML += `
                             <div class="tweet-card">
                                 <div class="media">
-                                    <input type="hidden" id="user_id" value="${twot.user_id}">
-                                    <img src="${twot.avatar}" class="align-self-start mr-3 tweet-avatar" alt="User Avatar" style="width: 48px;" onclick="window.location.href = './profile.html?id=${twot.user_id}'">
-                                    <div class="media-body tweet-content">
+                                  <img src="${twot.avatar}" class="align-self-start mr-3 tweet-avatar" alt="User Avatar" style="width: 48px;"  onclick="window.location.href = './profile.html?id=${twot.user_id}'">
+                                  <div class="media-body tweet-content">
+                                  <input type="hidden" value="${twot.message_id}" id="message_id">
+                                    <div onclick="window.location.href = './twot.html?id=${twot.message_id}'">
                                         <h5 class="mt-0 tweet-username">${twot.username}</h5>
                                         <p class="tweet-time">${timestamp_to_date(twot.timestamp)}</p>
                                         <p class="tweet-message">
                                             ${twot.message}
                                         </p>
                                         <img src="${twot.adjunct}" alt="adjunct">
-                                        ${
-                                    localStorage.getItem('token') ? `
-                                        <div class="tweet-actions mt-1">
-                                        <button class="btn btn-xxl" id='like_${twot.message_id}' title="Like" onclick="like_dislike('like', ${twot.message_id})">
-                                          <i class="bi bi-heart"></i>
-                                        </button>
-                                        <button class="btn btn-xxl" id='dislike_${twot.message_id}' title="Dislike" onclick="like_dislike('dislike', ${twot.message_id})">
-                                          <i class="bi bi-heartbreak"></i>
-                                        </button>
-                                        <button class="btn btn-xxl" id='reply_${twot.message_id}' title="Reply" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="setup_modal('${twot.message_id}', '${twot.username}', '${twot.message}', '${twot.avatar}', '${timestamp_to_date(twot.timestamp)}')">
-                                          <i class="bi bi-chat-left-text"></i>
-                                        </button>
-                                        </div>
-                                            ` : ''
-                                }
                                     </div>
-                                </div>
-                                <hr>
-                                ${
-                                    replies.map(reply => `
-                                <div class="reply">
-                                  <div class="media">
-                                    <img src="${reply.avatar}" class="align-self-start mr-3 tweet-avatar" alt="avatar" style="width: 48px;" onclick="window.location.href = './profile.html?id=${reply.user_id}'">
-                                    <div class="media-body">
-                                      <h5 class="mt-0 tweet-username">${reply.username}</h5>
-                                      <p class="tweet-time">${timestamp_to_date(reply.timestamp)}</p>
-                                      <p class="tweet-message">${reply.comment}</p>
-                                    </div>
-                                  </div>
-                                </div>`
-                                    ).join('')
-                                }
-                            </div>
-                            `
-                            })
-                        })
-                        .then(() => {
-                            localStorage.getItem('token') ? fetch(lambda_likes,
-                                {
-                                    method: 'POST',
-                                    body: JSON.stringify({token: localStorage.getItem('token')})
 
-                                })
-                                .then(response => response.ok ? response.json() : [])
-                                .then(response => {
-                                    response.map(like => {
-                                        let twot = document.getElementById(like.type + '_' + like.message_id)
-                                        if (twot) twot.innerHTML = like.type === 'like' ? heart_on : dislike_on
-                                    })
-                                }) : ''
+                                    ${localStorage.getItem('token') ? `<div class="tweet-actions mt-1">
+                                      <button class="btn btn-xxl" id='like_${twot.message_id}' title="Like" onclick="like_dislike('like', ${twot.message_id})">
+                                        <i class="bi bi-heart"></i>
+                                      </button>
+                                      <button class="btn btn-xxl" id='dislike_${twot.message_id}' title="Dislike" onclick="like_dislike('dislike', ${twot.message_id})">
+                                        <i class="bi bi-heartbreak"></i>
+                                      </button>
+                                      <button class="btn btn-xxl" id='reply_${twot.message_id}' title="Reply" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="setup_modal('${twot.message_id}', '${twot.username}', '${twot.message}', '${twot.avatar}', '${timestamp_to_date(twot.timestamp)}')">
+                                        <i class="bi bi-chat-left-text"></i>
+                                      </button>
+                                    </div>` : ''}
+                                  </div>
+                                </div>
+                            </div>
+                    `
+                    })
+                })
+                .then(() => {
+                    fetch(lambda_likes,
+                        {
+                            method: 'POST',
+                            body: JSON.stringify({token: localStorage.getItem('token')})
+
+                        })
+                        .then(response => response.ok ? response.json() : [])
+                        .then(response => {
+                            response.map(like => {
+                                let twot = document.getElementById(like.type + '_' + like.message_id)
+                                if (twot) twot.innerHTML = like.type === 'like' ? heart_on : dislike_on
+                            })
                         })
                 })
         }
@@ -305,7 +341,10 @@
                         if (response !== 'ok') alert('Error')
                     }
                 )
-                .then(() => window.location.reload()
+                .then(() => {
+                        document.getElementById('comentario').value = ''
+                        $('#exampleModal').modal('hide')
+                    }
                 )
         }
 
@@ -357,7 +396,23 @@
     </div>
 </div>
 
-<div class="container main-content">
+
+<div class="container">
+    <div class="profile-header-container my-3 p-3">
+        <div class="row g-0 align-items-center">
+            <div class="col-md-auto text-center text-md-start">
+                <img src="" class="profile-avatar" id="profile_avatar" alt="">
+            </div>
+            <div class="col-md">
+                <div class="px-3">
+                    <div class="username" id="profile_username"></div>
+                    <div id="profile_email"></div>
+                    <div id="profile_biography"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col" id="twots"></div>
     </div>
