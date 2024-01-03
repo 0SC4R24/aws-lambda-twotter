@@ -102,6 +102,11 @@
         .btn-primary:focus, .btn-secondary:focus {
             box-shadow: none;
         }
+
+        .textarea {
+            resize: vertical; 
+            max-height: 160px;
+        }
     </style>
 
     <script>
@@ -282,6 +287,49 @@
             localStorage.removeItem('token')
             cd_login()
         }
+
+        function updateCharacterCount() {
+            const maxLength = 255;
+            const tweetInput = document.getElementById('tweetInput');
+            const characterCount = document.getElementById('characterCount');
+            const currentLength = tweetInput.value.length;
+
+            characterCount.textContent = (maxLength - currentLength) + '/' + maxLength;
+
+            if (maxLength - currentLength <= 20) {
+                characterCount.classList.add('text-danger');
+                characterCount.classList.remove('text-muted');
+            } else {
+                characterCount.classList.remove('text-danger');
+                characterCount.classList.add('text-muted');
+            }
+
+            document.getElementById('post').disabled = currentLength >= maxLength;
+        }
+
+        function post() {
+            let lambda = 'https://3xt6za3jf5b5ceefrie2c4kasm0bzayq.lambda-url.us-east-1.on.aws/'
+            let formulario = {
+                token: localStorage.getItem('token'),
+                message: document.getElementById('tweetInput').value
+            }
+
+            fetch(lambda,
+                {
+                    method: 'POST',
+                    body: JSON.stringify(formulario)
+                }
+            )
+                .then(response => response.ok ? 'ok' : 'error')
+                .then(response => {
+                        if (response !== 'ok') alert('Error')
+                    }
+                )
+                .then(() => {
+                        window.location.reload()
+                    }
+                )
+        }
     </script>
 
 </head>
@@ -323,7 +371,7 @@
                 </div>
             </div>
             <div class="modal-body">
-                <textarea class="form-control" id="comentario" style="background-color: #f8f9fa;" placeholder="Tweet your reply"></textarea>
+                <textarea class="form-control textarea" id="comentario" maxlength="255" style="background-color: #f8f9fa;" placeholder="Tweet your reply"></textarea>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-primary" onclick="reply()">Comentar</button>
@@ -333,6 +381,19 @@
 </div>
 
 <div class="container main-content">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-body">
+                    <textarea class="form-control mb-2 textarea" id="tweetInput" maxlength="255" placeholder="What's happening?" rows="3" required oninput="updateCharacterCount()"></textarea>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small id="characterCount" class="text-muted">255/255</small>
+                        <button type="button" id="post" class="btn btn-primary" onclick="post()">Post</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="row">
         <div class="col" id="twots"></div>
     </div>
