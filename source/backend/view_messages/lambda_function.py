@@ -1,5 +1,7 @@
 import json
+from datetime import datetime
 
+import jwt
 import pymysql
 
 SECRET = "PROYECTO3SISDIS2024"
@@ -34,12 +36,39 @@ def lambda_handler(event, context):
     limit = body.get('limit', 10)
 
     user_id = None if "user_id" not in body else body.get('user_id')
+    message_id = None if "message_id" not in body else body.get('message_id')
+    token = None if "token" not in body else body.get('token')
+
+    if token:
+        try:
+            decoded = jwt.decode(token, SECRET, algorithms=["HS256"])
+            user_token_id = decoded.get('id')
+            exp = decoded.get('exp')
+
+            if datetime.now().timestamp() > exp:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Access-Control-Allow-Origin': '*'},
+                    'body': "Token has expired"
+                }
+
+        except:
+            return {
+                'statusCode': 401,
+                'headers': {'Access-Control-Allow-Origin': '*'},
+                'body': "Invalid token"
+            }
+    else: user_token_id = None
 
     conn = pymysql.connect(rds_host, user=username, passwd=password, db=database, connect_timeout=5)
     cursor = conn.cursor()
 
-    if user_id:
+    if user_token_id:
+        cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u on m.user_id = u.id JOIN followers as f on m.user_id = f.following_id where f.user_id = %s LIMIT %s', (user_token_id, limit))
+    elif user_id:
         cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u ON m.user_id = u.id where user_id=%s LIMIT %s', (user_id, limit))
+    elif message_id:
+        cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u ON m.user_id = u.id where m.id=%s LIMIT %s', (message_id, limit))
     else:
         cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u ON m.user_id = u.id LIMIT %s', (limit,))
 

@@ -42,7 +42,7 @@ def lambda_handler(event, context):
     rg_email = body.get('email', 'None')
     rg_password = body.get('password', 'None')
     rg_recover = body.get('recover', 'None')
-    rg_avatar = body.get('avatar', 'None')
+    rg_avatar = body.get('avatar', 'https://cdn-icons-png.flaticon.com/512/9205/9205233.png')
     rg_biography = body.get('biography', 'None')
 
     conn = pymysql.connect(rds_host, user=username, passwd=password, db=database, connect_timeout=5)

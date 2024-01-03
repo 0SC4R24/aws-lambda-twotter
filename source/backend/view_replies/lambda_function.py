@@ -40,14 +40,14 @@ def lambda_handler(event, context):
 
     if not message_id:
         return {
-            'statusCode': 200,
+            'statusCode': 400,
             'headers': {'Access-Control-Allow-Origin': '*'},
             'body': "Missing message_id"
         }
 
     if not cursor.execute('SELECT r.id, r.comment, r.datetime, u.id, u.username, u.avatar FROM replies as r JOIN users as u on r.user_id = u.id where message_id=%s LIMIT %s', (message_id, limit)):
         return {
-            'statusCode': 200,
+            'statusCode': 400,
             'headers': {'Access-Control-Allow-Origin': '*'},
             'body': "No replies found"
         }

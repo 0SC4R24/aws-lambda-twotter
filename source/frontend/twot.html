@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Twitter-like Homepage</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
         body {
             background-color: #f8f9fa;
@@ -77,14 +76,38 @@
         .tweet-message {
             margin-top: 5px;
         }
+
+        .tweet-card {
+            border: 1px solid #e1e8ed;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background-color: #fff;
+            padding: 10px;
+        }
+
+        .media {
+            margin-top: 10px;
+        }
+
+        .media-body {
+            margin-left: 10px;
+        }
+
+        .reply {
+            background-color: #f7f7f7;
+            margin-left: 20px;
+            margin-right: 20px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .reply .media-body {
+            margin-left: 10px;
+        }
     </style>
 
     <script>
-        let dislike_on = '<i class="bi bi-heartbreak-fill"></i>',
-            dislike_off = '<i class="bi bi-heartbreak"></i>',
-            heart_on = '<i class="bi bi-heart-fill"></i>',
-            heart_off = '<i class="bi bi-heart"></i>'
-
         function timestamp_to_date(timestamp) {
             // Create a new date object from the timestamp
             // The timestamp is expected to be in seconds, JavaScript Date requires milliseconds
@@ -111,24 +134,44 @@
                 return
             }
 
-            let lambda = 'https://3vyjmikqa4nuc3gcosabaiv7fa0jujfc.lambda-url.us-east-1.on.aws/'
+            let lambda = 'https://3vyjmikqa4nuc3gcosabaiv7fa0jujfc.lambda-url.us-east-1.on.aws'
+            let lambda_replies = 'https://stcxxogs4p5ofxie7cl564hcom0rfvcx.lambda-url.us-east-1.on.aws'
+            const urlParams = new URLSearchParams(window.location.search);
+            let formulario = {
+                message_id: urlParams.get('id')
+            }
 
-            fetch(lambda,
+            fetch(lambda_replies,
                 {
                     method: 'POST',
-                    // body: JSON.stringify({token: localStorage.getItem('token')})
+                    body: JSON.stringify(formulario)
+
                 }
             )
-                .then(response => response.json())
-                .then(response => {
-                    response.map((twot) => {
-                        document.getElementById('twots').innerHTML += `
+                .then(response => response.ok ? response.json() : [])
+                .then(replies => {
+                    fetch(lambda,
+                        {
+                            method: 'POST',
+                            body: JSON.stringify(formulario)
+                        }
+                    )
+                        .then(response => response.ok ? response.json() : [{
+                            username: '404 - No twot found',
+                            message: 'No twot found, go back to homepage or contact administration.',
+                            timestamp: 1704303752,
+                            adjunct: 'https://images-ext-2.discordapp.net/external/iTPn2yMohYXvu5f2JoQMcYhkYL9IWaUBleR2LlQ1KuE/%3Fse%3D2024-01-03T17%253A49%253A45Z%26sp%3Dr%26sv%3D2021-08-06%26sr%3Db%26rscc%3Dmax-age%253D31536000%252C%2520immutable%26rscd%3Dattachment%253B%2520filename%253D38674596-5486-43d9-aab4-1fe68f26b478.webp%26sig%3DLbX84LxxXcupcSazYc0AhUyDmLJljPS%252B63vNsoeY0ng%253D/https/files.oaiusercontent.com/file-onEXcUD4RN9qwN2hrYbaSpsG?format=webp&width=468&height=468',
+                            avatar: 'https://cdn-icons-png.flaticon.com/512/9205/9205233.png'
+
+                        }])
+                        .then(response => {
+                            response.map((twot) => {
+                                document.getElementById('twots').innerHTML += `
                             <div class="tweet-card">
                                 <div class="media">
-                                  <img src="${twot.avatar}" class="align-self-start mr-3 tweet-avatar" alt="User Avatar" style="width: 48px;"  onclick="window.location.href = './profile.html?id=${twot.user_id}'">
-                                  <div class="media-body tweet-content">
-                                  <input type="hidden" value="${twot.message_id}" id="message_id">
-                                    <div onclick="window.location.href = './twot.html?id=${twot.message_id}'">
+                                    <input type="hidden" id="user_id" value="${twot.user_id}">
+                                    <img src="${twot.avatar}" class="align-self-start mr-3 tweet-avatar" alt="User Avatar" style="width: 48px;">
+                                    <div class="media-body tweet-content">
                                         <h5 class="mt-0 tweet-username">${twot.username}</h5>
                                         <p class="tweet-time">${timestamp_to_date(twot.timestamp)}</p>
                                         <p class="tweet-message">
@@ -136,59 +179,26 @@
                                         </p>
                                         <img src="${twot.adjunct}" alt="adjunct">
                                     </div>
-                                    <!-- Action buttons -->
-                                    <div class="tweet-actions mt-1">
-                                      <button class="btn btn-xxl" id='like_${twot.message_id}' title="Like" onclick="like_dislike('like', ${twot.message_id})">
-                                        <i class="bi bi-heart"></i>
-                                      </button>
-                                      <button class="btn btn-xxl" id='dislike_${twot.message_id}' title="Dislike" onclick="like_dislike('dislike', ${twot.message_id})">
-                                        <i class="bi bi-heartbreak"></i>
-                                      </button>
-                                      <button class="btn btn-xxl" id='reply_${twot.message_id}'value=""  title="Reply">
-                                        <i class="bi bi-chat-left-text"></i>
-                                      </button>
+                                </div>
+                                <hr>
+                                ${
+                                    replies.map(reply => `
+                                <div class="reply">
+                                  <div class="media">
+                                    <img src="${reply.avatar}" class="align-self-start mr-3 tweet-avatar" alt="avatar" style="width: 48px;">
+                                    <div class="media-body">
+                                      <h5 class="mt-0 tweet-username">${reply.username}</h5>
+                                      <p class="tweet-time">${timestamp_to_date(reply.timestamp)}</p>
+                                      <p class="tweet-message">${reply.comment}</p>
                                     </div>
                                   </div>
-                                </div>
+                                </div>`
+                                    )
+                                }
                             </div>
-                    `
-                    })
-                })
-        }
-
-        function like_dislike(tipo, message_id) {
-            lambda = 'https://4zeiq7jt4jagse2qw7vreakuyq0rcnrh.lambda-url.us-east-1.on.aws'
-            formulario = {
-                action: tipo,
-                token: localStorage.getItem('token'),
-                message_id: message_id
-            }
-
-            fetch(lambda,
-                {
-                    method: 'POST',
-                    body: JSON.stringify(formulario)
-                }
-            )
-                .then(response => response.ok ? 'ok' : 'error')
-                .then(response => {
-                    if (response === 'ok') {
-                        if (tipo === 'like') {
-                            let like = document.getElementById(`like_${message_id}`)
-                            let dislike = document.getElementById(`dislike_${message_id}`)
-
-                            like.innerHTML = like.innerHTML === heart_on ? heart_off : heart_on
-                            dislike.innerHTML = dislike_off
-                        } else {
-                            let like = document.getElementById(`like_${message_id}`)
-                            let dislike = document.getElementById(`dislike_${message_id}`)
-
-                            dislike.innerHTML = dislike.innerHTML === dislike_on ? dislike_off : dislike_on
-                            like.innerHTML = heart_off
-                        }
-                    } else {
-                        alert('Error')
-                    }
+                            `
+                            })
+                        })
                 })
         }
 
