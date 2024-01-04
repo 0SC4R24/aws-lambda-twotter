@@ -129,6 +129,10 @@
             heart_on = '<i class="bi bi-heart-fill"></i>',
             heart_off = '<i class="bi bi-heart"></i>'
 
+        let limit = 10,
+            offset = 0,
+            timeout = true
+
         function timestamp_to_date(timestamp) {
             // Create a new date object from the timestamp
             // The timestamp is expected to be in seconds, JavaScript Date requires milliseconds
@@ -162,7 +166,7 @@
             fetch(lambda,
                 {
                     method: 'POST',
-                    body: JSON.stringify({token: localStorage.getItem('token')})
+                    body: JSON.stringify({token: localStorage.getItem('token'), limit: limit, offset: offset})
                 }
             )
                 .then(response => response.ok ? response.json() : undefined)
@@ -171,7 +175,7 @@
                         return fetch(lambda,
                             {
                                 method: 'POST',
-                                body: JSON.stringify({limit: 1000})
+                                body: JSON.stringify({limit: limit, offset: offset})
                             }
                         )
                             .then(response => response.ok ? response.json() : [])
@@ -248,6 +252,15 @@
                             })
                         })
                 })
+                .then(() => offset += limit)
+                .then(() => timeout = true)
+        }
+
+        function cargar_mas() {
+            if (timeout) {
+                timeout = false
+                on_load()
+            }
         }
 
         function like_dislike(tipo, message_id) {
@@ -408,7 +421,7 @@
     </script>
 
 </head>
-<body class="d-flex flex-column" onload="on_load()">
+<body id="cargar_mas" class="d-flex flex-column" onload="on_load()" onscroll="window.scrollY + window.innerHeight >= (document.documentElement.scrollHeight - (document.documentElement.scrollHeight / 4)) ? cargar_mas() : ''">
 
 <nav class="sticky-top navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
