@@ -68,7 +68,7 @@ def lambda_handler(event, context):
     if action == "follow":
         cursor.execute("INSERT INTO followers (user_id, following_id) VALUES (%s, %s)", (user_id, following_id))
 
-    elif action == "unfollow":
+    else:
         cursor.execute("DELETE FROM followers WHERE user_id = %s AND following_id = %s", (user_id, following_id))
 
     conn.commit()

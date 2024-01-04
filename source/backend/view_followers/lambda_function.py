@@ -1,5 +1,7 @@
 import json
+from datetime import datetime
 
+import jwt
 import pymysql
 
 SECRET = "PROYECTO3SISDIS2024"
@@ -31,24 +33,43 @@ def lambda_handler(event, context):
 
     body = json.loads(event.get("body", "{}"))
 
-    limit = body.get('limit', 10)
-
     user_id = None if "user_id" not in body else body.get('user_id')
+    token = None if "token" not in body else body.get('token')
 
     conn = pymysql.connect(rds_host, user=username, passwd=password, db=database, connect_timeout=5)
     cursor = conn.cursor()
 
-    cursor.execute('SELECT id, username, email, avatar, biography FROM followers as f JOIN users as u ON f.user_id = u.id WHERE following_id = %s LIMIT %s', (user_id, limit))
+    if token:
+        try:
+            decoded = jwt.decode(token, SECRET, algorithms=["HS256"])
+            user_id = decoded.get('id', 0)
+            exp = decoded.get('exp', 0)
 
-    followers = [
-        {
-            'id': x[0],
-            'username': x[1],
-            'email': x[2],
-            'avatar': x[3],
-            'biography': x[4]
-        } for x in cursor.fetchall()
-    ]
+            if datetime.now().timestamp() > exp:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Access-Control-Allow-Origin': '*'},
+                    'body': "Token has expired"
+                }
+
+        except:
+            return {
+                'statusCode': 401,
+                'headers': {'Access-Control-Allow-Origin': '*'},
+                'body': "Invalid token"
+            }
+
+    followers = None
+    if cursor.execute('SELECT id, username, email, avatar, biography FROM followers as f JOIN users as u ON f.user_id = u.id WHERE following_id = %s', (user_id,)):
+        followers = [
+            {
+                'id': x[0],
+                'username': x[1],
+                'email': x[2],
+                'avatar': x[3],
+                'biography': x[4]
+            } for x in cursor.fetchall()
+        ]
 
     cursor.close()
     conn.close()
