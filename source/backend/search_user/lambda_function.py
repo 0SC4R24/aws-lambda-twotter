@@ -31,7 +31,7 @@ def lambda_handler(event, context):
 
     body = json.loads(event.get("body", "{}"))
 
-    limit = body.get('limit', 10)
+    limit = int(body.get('limit', 10))
 
     user_name = None if "username" not in body else body.get('username')
 

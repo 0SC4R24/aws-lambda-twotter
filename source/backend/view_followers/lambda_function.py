@@ -60,7 +60,7 @@ def lambda_handler(event, context):
             }
 
     followers = None
-    if cursor.execute('SELECT id, username, email, avatar, biography FROM followers as f JOIN users as u ON f.user_id = u.id WHERE following_id = %s', (user_id,)):
+    if cursor.execute('SELECT id, username, email, avatar, biography FROM followers as f JOIN users as u ON f.following_id = u.id WHERE user_id = %s', (user_id,)):
         followers = [
             {
                 'id': x[0],
