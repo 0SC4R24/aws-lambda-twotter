@@ -67,7 +67,8 @@ def lambda_handler(event, context):
     if user_token_id:
         rows = cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u on m.user_id = u.id JOIN followers as f on m.user_id = f.following_id where f.user_id = %s ORDER BY m.datetime DESC LIMIT %s OFFSET %s', (user_token_id, limit, offset))
     elif user_id:
-        rows = cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u ON m.user_id = u.id where user_id=%s ORDER BY m.datetime DESC LIMIT %s OFFSET %s', (user_id, limit, offset))
+        rows = 1
+        cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u ON m.user_id = u.id where user_id=%s ORDER BY m.datetime DESC LIMIT %s OFFSET %s', (user_id, limit, offset))
     elif message_id:
         rows = cursor.execute('SELECT u.username, u.avatar, u.id, m.id, m.message, m.adjunct, m.datetime FROM messages as m JOIN users as u ON m.user_id = u.id where m.id=%s ORDER BY m.datetime DESC LIMIT %s OFFSET %s', (message_id, limit, offset))
     else: rows = 0

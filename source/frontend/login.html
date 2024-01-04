@@ -80,7 +80,9 @@
     })
 
     function submit() {
-        let lambda = 'https://ailqhjmolxolj2hybwkkuph4su0heigf.lambda-url.us-east-1.on.aws/'
+        let lambda = 'https://ailqhjmolxolj2hybwkkuph4su0heigf.lambda-url.us-east-1.on.aws/',
+            lambda_user = 'https://afaeu2bysojgblo3t5dpajfabe0pghno.lambda-url.us-east-1.on.aws/'
+
         let formulario = {
             username: document.getElementById('username').value,
             password: CryptoJS.SHA256(document.getElementById('password').value).toString()
@@ -97,7 +99,6 @@
                 if (response[0]) {
                     response[1].then(data => {
                         localStorage.setItem('token', data)
-                        window.location.href = './home.html'
                     })
                 } else {
                     response[1].then(data => {
@@ -105,6 +106,21 @@
                         window.location.href = './login.html'
                     })
                 }
+            })
+            .then(() => {
+                fetch(lambda_user,
+                    {
+                        method: 'POST',
+                        body: JSON.stringify({token: localStorage.getItem('token')})
+                    }
+                )
+                    .then(response => response.ok ? response.json() : "")
+                    .then(response => {
+                        if (response === "") return
+
+                        localStorage.setItem('user_id', response.id)
+                        window.location.href = './home.html'
+                    })
             })
     }
 </script>

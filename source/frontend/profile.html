@@ -89,11 +89,6 @@
             justify-content: flex-end;
         }
 
-        .modal-footer .btn {
-            background-color: #1da1f2;
-            border: none;
-        }
-
         .modal-footer .btn-secondary {
             background-color: transparent;
             color: #8899a6;
@@ -200,10 +195,9 @@
             let lambda = 'https://3vyjmikqa4nuc3gcosabaiv7fa0jujfc.lambda-url.us-east-1.on.aws/',
                 lambda_likes = 'https://jg22cj44kwhjtigfplrvzcn3ou0mfnwx.lambda-url.us-east-1.on.aws/',
                 lambda_user = 'https://afaeu2bysojgblo3t5dpajfabe0pghno.lambda-url.us-east-1.on.aws/',
-                lambda_following = 'https://2twmzoilpnar2h5osukclrttue0fttvn.lambda-url.us-east-1.on.aws/',
-                lambda_view_user = 'https://afaeu2bysojgblo3t5dpajfabe0pghno.lambda-url.us-east-1.on.aws/'
-            
-            fetch(lambda_view_user,
+                lambda_following = 'https://2twmzoilpnar2h5osukclrttue0fttvn.lambda-url.us-east-1.on.aws/'
+
+            fetch(lambda_user,
                 {
                     method: 'POST',
                     body: JSON.stringify({token: localStorage.getItem('token')})
@@ -217,6 +211,11 @@
                     }
 
                     document.getElementById('profile').href = './profile.html?id=' + response.id
+                    document.getElementById('settings_avatar').src = response.avatar
+                    document.getElementById('settings_username_span').innerHTML = response.username
+                    document.getElementById('settings_username').value = response.username
+                    document.getElementById('settings_email').value = response.email
+                    document.getElementById('settings_biography').value = response.biography
                 })
 
             const urlParams = new URLSearchParams(window.location.search);
@@ -235,7 +234,7 @@
                     "avatar": "https://media1.giphy.com/media/SsOLnh6OTU3RR4IXuq/giphy.gif?cid=ecf05e47xq0q1k5nma42t6ngsiv5xi67uoq848w12ajh7mb3&ep=v1_gifs_related&rid=giphy.gif&ct=g",
                     "biography": "No bio yet",
                     "email": "notfound@404.com",
-                    "id": 0,
+                    "id": -1,
                     "username": "notfound404"
                 })
                 .then(response => {
@@ -243,7 +242,9 @@
                     document.getElementById('profile_username').innerHTML = response.username
                     document.getElementById('profile_biography').innerHTML = response.biography
                     document.getElementById('profile_email').innerHTML = response.email
-                    document.getElementById('follow_user').innerHTML = localStorage.getItem('token') ? `<button class="btn btn-sm btn-outline-primary border rounded-pill p-2 follow_${response.id}" onclick="follow(${response.id}, 'follow')">Follow</button>` : ''
+                    document.getElementById('follow_user').innerHTML = (localStorage.getItem('user_id') == response.id) ? `
+<button class="btn btn-sm btn-outline-primary border rounded-pill p-2 follow_9" data-bs-toggle="modal" data-bs-target="#modal_settings">Edit profile</button>
+` : response.id != -1 ? `<button class="btn btn-sm btn-outline-primary border rounded-pill p-2 follow_${response.id}" onclick="follow(${response.id}, 'follow')">Follow</button>` : ''
                 })
 
             fetch(lambda,
@@ -425,6 +426,32 @@
                 })
         }
 
+        function modificar() {
+            let lambda = 'https://mrjbtj2nkdzxqqjilbky7mgzjq0mixbi.lambda-url.us-east-1.on.aws/'
+            let formulario = {
+                token: localStorage.getItem('token'),
+                avatar: document.getElementById('settings_avatar').src,
+                email: document.getElementById('settings_email').value,
+                biography: document.getElementById('settings_biography').value
+            }
+
+            fetch(lambda,
+                {
+                    method: 'POST',
+                    body: JSON.stringify(formulario)
+                }
+            )
+                .then(response => response.ok ? 'ok' : 'error')
+                .then(response => {
+                        if (response !== 'ok') alert('Error')
+                    }
+                )
+                .then(() => {
+                        window.location.reload()
+                    }
+                )
+        }
+
         function logout() {
             localStorage.removeItem('token')
             cd_login()
@@ -463,7 +490,7 @@
             </ul>
         </div>
     </div>
-</nav>  
+</nav>
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -491,6 +518,42 @@
     </div>
 </div>
 
+<div class="modal fade" id="modal_settings" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-2 d-flex flex-column">
+                        <img src="" id="settings_avatar" class="align-self-start mr-3 tweet-avatar" alt="User Avatar" style="width: 48px;">
+                    </div>
+                    <div class="col">
+                        <h3>Perfil de <span id="settings_username_span">USUARIO</span></h3>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <span class="input-group-text">@</span>
+                    <input type="text" id="settings_username" readonly class="form-control" placeholder="Username" aria-label="Username" aria-describedby="settings_username">
+                </div>
+
+                <div class="input-group mb-3">
+                    <span class="input-group-text">#</span>
+                    <input type="text" id="settings_email" class="form-control" placeholder="Email" aria-label="Email" aria-describedby="settings_email">
+                </div>
+
+                <div class="input-group">
+                    <span class="input-group-text">Biography</span>
+                    <textarea class="form-control" id="settings_biography" aria-label="With textarea"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="modificar()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="container">
     <div class="profile-header-container my-3 p-3">
