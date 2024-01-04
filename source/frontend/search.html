@@ -142,7 +142,24 @@
                 return
             }
 
-            let lambda_search = "https://kq6kcq6ag67eaqe5arlm6u3gdq0dusjf.lambda-url.us-east-1.on.aws/"
+            let lambda_search = "https://kq6kcq6ag67eaqe5arlm6u3gdq0dusjf.lambda-url.us-east-1.on.aws/",
+                lambda_view_user = 'https://afaeu2bysojgblo3t5dpajfabe0pghno.lambda-url.us-east-1.on.aws/'
+            
+            fetch(lambda_view_user,
+                {
+                    method: 'POST',
+                    body: JSON.stringify({token: localStorage.getItem('token')})
+                }
+            )
+                .then(response => response.ok ? response.json() : "")
+                .then(response => {
+                    if (response === "") {
+                        logout()
+                        return
+                    }
+
+                    document.getElementById('profile').href = './profile.html?id=' + response.id
+                })
 
             let urlParams = new URLSearchParams(window.location.search);
             let formulario = {
@@ -202,7 +219,7 @@
             <!-- Navigation Links -->
             <ul class="navbar-nav ml-auto" id="navbar_elements">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Profile</a>
+                    <a class="nav-link" id="profile" href="#">Profile</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" onclick="logout()">Log out</a>

@@ -140,7 +140,7 @@
         function on_load() {
             document.getElementById('navbar_elements').innerHTML = localStorage.getItem('token') ? `
             <li class="nav-item">
-                    <a class="nav-link" href="#">Profile</a>
+                    <a class="nav-link" id="profile" href="#">Profile</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" onclick="logout()">Log out</a>
@@ -152,7 +152,25 @@
             let lambda = 'https://3vyjmikqa4nuc3gcosabaiv7fa0jujfc.lambda-url.us-east-1.on.aws/',
                 lambda_likes = 'https://jg22cj44kwhjtigfplrvzcn3ou0mfnwx.lambda-url.us-east-1.on.aws/',
                 lambda_replies = 'https://stcxxogs4p5ofxie7cl564hcom0rfvcx.lambda-url.us-east-1.on.aws',
-                lambda_following = 'https://2twmzoilpnar2h5osukclrttue0fttvn.lambda-url.us-east-1.on.aws/'
+                lambda_following = 'https://2twmzoilpnar2h5osukclrttue0fttvn.lambda-url.us-east-1.on.aws/',
+                lambda_view_user = 'https://afaeu2bysojgblo3t5dpajfabe0pghno.lambda-url.us-east-1.on.aws/'
+            
+            fetch(lambda_view_user,
+                {
+                    method: 'POST',
+                    body: JSON.stringify({token: localStorage.getItem('token')})
+                }
+            )
+                .then(response => response.ok ? response.json() : "")
+                .then(response => {
+                    if (response === "") {
+                        logout()
+                        return
+                    }
+
+                    document.getElementById('profile').href = './profile.html?id=' + response.id
+                })
+
             const urlParams = new URLSearchParams(window.location.search);
             let formulario = {
                 message_id: urlParams.get('id')
@@ -398,7 +416,7 @@
             <!-- Navigation Links -->
             <ul class="navbar-nav ml-auto" id="navbar_elements">
                 <li class="nav-item">
-                    <a class="nav-link" href="#">Profile</a>
+                    <a class="nav-link" id="profile" href="#">Profile</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" onclick="logout()">Log out</a>
