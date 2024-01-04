@@ -38,14 +38,16 @@ def lambda_handler(event, context):
     conn = pymysql.connect(rds_host, user=username, passwd=password, db=database, connect_timeout=5)
     cursor = conn.cursor()
 
-    cursor.execute('SELECT id, username FROM users where username LIKE %s LIMIT %s', (f'%{user_name}%', limit))
-
-    users = [
-        {
-            'id': x[0],
-            'username': x[1]
-        } for x in cursor.fetchall()
-    ]
+    users = None
+    if cursor.execute('SELECT id, username, avatar, biography FROM users where username LIKE %s LIMIT %s', (f'%{user_name}%', limit)):
+        users = [
+            {
+                'id': x[0],
+                'username': x[1],
+                'avatar': x[2],
+                'biography': x[3]
+            } for x in cursor.fetchall()
+        ]
 
     cursor.close()
     conn.close()
