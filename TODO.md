@@ -1,6 +1,7 @@
-# TODOLIST 
-- Follow de los usuarios
-- Crear publicaciones
-- Ver/Modificar perfiles de usuarios (ADRIAN)
+# TODOLIST
+- Modificar perfiles de usuarios
 - Paginacion de las publicaciones
-- Busqueda de usuarios
+- Subir archivos al S3
+- Mejorar el home:
+    - Boton de ver a los que sigo
+    - Boton de ir a mi perfil
