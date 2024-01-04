@@ -150,6 +150,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
+            document.getElementById('comentario').addEventListener('keydown', function (e) {
+                if (e.ctrlKey && e.key === 'Enter') reply()
+            })
+
             document.getElementById('search').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') search()
             })

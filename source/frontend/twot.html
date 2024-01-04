@@ -106,6 +106,10 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
+            document.getElementById('comentario').addEventListener('keydown', function (e) {
+                if (e.ctrlKey && e.key === 'Enter') reply()
+            })
+
             document.getElementById('search').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') search()
             })
@@ -154,7 +158,7 @@
                 lambda_replies = 'https://stcxxogs4p5ofxie7cl564hcom0rfvcx.lambda-url.us-east-1.on.aws',
                 lambda_following = 'https://2twmzoilpnar2h5osukclrttue0fttvn.lambda-url.us-east-1.on.aws/',
                 lambda_view_user = 'https://afaeu2bysojgblo3t5dpajfabe0pghno.lambda-url.us-east-1.on.aws/'
-            
+
             fetch(lambda_view_user,
                 {
                     method: 'POST',
@@ -424,7 +428,7 @@
             </ul>
         </div>
     </div>
-</nav>  
+</nav>
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
