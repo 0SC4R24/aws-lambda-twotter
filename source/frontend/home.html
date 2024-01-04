@@ -156,7 +156,8 @@
             }
 
             let lambda = 'https://3vyjmikqa4nuc3gcosabaiv7fa0jujfc.lambda-url.us-east-1.on.aws/',
-                lambda_likes = 'https://jg22cj44kwhjtigfplrvzcn3ou0mfnwx.lambda-url.us-east-1.on.aws/'
+                lambda_likes = 'https://jg22cj44kwhjtigfplrvzcn3ou0mfnwx.lambda-url.us-east-1.on.aws/',
+                lambda_following = 'https://2twmzoilpnar2h5osukclrttue0fttvn.lambda-url.us-east-1.on.aws/'
 
             fetch(lambda,
                 {
@@ -170,7 +171,7 @@
                         return fetch(lambda,
                             {
                                 method: 'POST',
-                                // body: JSON.stringify({token: localStorage.getItem('token')})
+                                body: JSON.stringify({limit: 1000})
                             }
                         )
                             .then(response => response.ok ? response.json() : [])
@@ -203,6 +204,7 @@
                                       <button class="btn btn-xxl" id='reply_${twot.message_id}' title="Reply" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="setup_modal('${twot.message_id}', '${twot.username}', '${twot.message}', '${twot.avatar}', '${timestamp_to_date(twot.timestamp)}')">
                                         <i class="bi bi-chat-left-text"></i>
                                       </button>
+                                      <small class="btn btn-sm btn-outline-primary border rounded-pill p-2 follow_${twot.user_id}" onclick="follow('${twot.user_id}', 'follow')">Follow</small>
                                     </div>
                                   </div>
                                 </div>
@@ -222,6 +224,27 @@
                             response.map(like => {
                                 let twot = document.getElementById(like.type + '_' + like.message_id)
                                 if (twot) twot.innerHTML = like.type === 'like' ? heart_on : dislike_on
+                            })
+                        })
+                })
+                .then(() => {
+                    fetch(lambda_following,
+                        {
+                            method: 'POST',
+                            body: JSON.stringify({token: localStorage.getItem('token')})
+                        }
+                    )
+                        .then(response => response.ok ? response.json() : [])
+                        .then(response => {
+                            response.map((follower) => {
+                                let f = document.getElementsByClassName(`follow_${follower.id}`)
+                                for (let i = 0; i < f.length; i++) {
+                                    f[i].innerHTML = 'Unfollow'
+                                    f[i].onclick = () => {
+                                        follow(follower.id, 'unfollow')
+                                    }
+                                }
+
                             })
                         })
                 })
@@ -269,6 +292,36 @@
             document.getElementById('modal_message').innerHTML = message
             document.getElementById('modal_avatar').src = avatar
             document.getElementById('modal_timestamp').innerHTML = timestamp
+        }
+
+        function follow(following_id, action) {
+            let lambda = 'https://hnyev4gcynlc276ltbbxdxlwha0kdegh.lambda-url.us-east-1.on.aws/'
+            let formulario = {
+                token: localStorage.getItem('token'),
+                following_id: following_id,
+                action: action
+            }
+
+            fetch(lambda,
+                {
+                    method: 'POST',
+                    body: JSON.stringify(formulario)
+                }
+            )
+                .then(response => response.ok ? 'ok' : 'error')
+                .then(response => {
+                        if (response !== 'ok') alert('No se pudo seguir al usuario')
+                    }
+                )
+                .then(() => {
+                    let f = document.getElementsByClassName(`follow_${following_id}`)
+                    for (let i = 0; i < f.length; i++) {
+                        f[i].innerHTML = action === 'follow' ? 'Unfollow' : 'Follow'
+                        f[i].onclick = () => {
+                            follow(following_id, action === 'follow' ? 'unfollow' : 'follow')
+                        }
+                    }
+                })
         }
 
         function reply() {
@@ -381,7 +434,7 @@
             </ul>
         </div>
     </div>
-</nav>    
+</nav>
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
