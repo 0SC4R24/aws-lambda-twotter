@@ -105,6 +105,12 @@
     </style>
 
     <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.getElementById('search').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') search()
+            })
+        })
+
         let dislike_on = '<i class="bi bi-heartbreak-fill"></i>',
             dislike_off = '<i class="bi bi-heartbreak"></i>',
             heart_on = '<i class="bi bi-heart-fill"></i>',
@@ -313,23 +319,41 @@
             localStorage.removeItem('token')
             cd_login()
         }
+
+        function search() {
+            let url = './search.html?username=' + document.getElementById('search').value
+            window.location.href = url
+        }
     </script>
 
 </head>
 <body class="d-flex flex-column" onload="on_load()">
 
-<nav class="sticky-top navbar navbar-expand-lg navbar-light">
+<nav class="sticky-top navbar navbar-expand-lg navbar-light bg-light">
     <div class="container">
         <a class="navbar-brand" href="./home.html">Twotter</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Search Bar -->
+            <div class="mx-auto my-auto d-inline w-50">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="search" placeholder="Search users..." aria-label="Search" aria-describedby="button-search">
+                </div>
+            </div>
+            <!-- Navigation Links -->
             <ul class="navbar-nav ml-auto" id="navbar_elements">
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="logout()">Log out</a>
+                </li>
             </ul>
         </div>
     </div>
-</nav>
+</nav>  
 
 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
