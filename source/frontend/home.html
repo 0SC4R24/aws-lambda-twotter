@@ -225,7 +225,11 @@
                                       <button class="btn btn-xxl" id='reply_${twot.message_id}' title="Reply" data-bs-toggle="modal" data-bs-target="#exampleModal" onclick="setup_modal('${twot.message_id}', '${twot.username}', '${twot.message}', '${twot.avatar}', '${timestamp_to_date(twot.timestamp)}')">
                                         <i class="bi bi-chat-left-text"></i>
                                       </button>
-                                      <small class="btn btn-sm btn-outline-primary border rounded-pill p-2 follow_${twot.user_id}" onclick="follow('${twot.user_id}', 'follow')">Follow</small>
+                                      ${
+                            localStorage.getItem('user_id') != twot.user_id ? `
+                                            <small class="btn btn-sm btn-outline-primary border rounded-pill p-2 follow_${twot.user_id}" onclick="follow('${twot.user_id}', 'follow')">Follow</small>
+                                            ` : ''
+                        }
                                     </div>
                                   </div>
                                 </div>
