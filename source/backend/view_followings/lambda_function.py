@@ -36,21 +36,14 @@ def lambda_handler(event, context):
     user_id = None if "user_id" not in body else body.get('user_id')
     token = None if "token" not in body else body.get('token')
 
-    if token and user_id:
-        return {
-            'statusCode': 400,
-            'headers': {'Access-Control-Allow-Origin': '*'},
-            'body': 'Cannot receive more than one parameter. Only user_id or token can be passed, not both.'
-        }
-
     conn = pymysql.connect(rds_host, user=username, passwd=password, db=database, connect_timeout=5)
     cursor = conn.cursor()
 
     if token:
         try:
             decoded = jwt.decode(token, SECRET, algorithms=["HS256"])
-            user_id = decoded.get('id')
-            exp = decoded.get('exp')
+            user_id = decoded.get('id', 0)
+            exp = decoded.get('exp', 0)
 
             if datetime.now().timestamp() > exp:
                 return {
@@ -66,31 +59,30 @@ def lambda_handler(event, context):
                 'body': "Invalid token"
             }
 
-    user = None
-    if cursor.execute('SELECT u.id, u.username, u.email, u.avatar, u.biography, (SELECT COUNT(*) FROM followers WHERE user_id = u.id) as nFollowings, (SELECT COUNT(*) FROM followers WHERE following_id = u.id) as nFollowers FROM users u WHERE u.id =  %s', (user_id,)):
-        userdata = cursor.fetchone()
-        user = {
-            'id': userdata[0],
-            'username': userdata[1],
-            'email': userdata[2],
-            'avatar': userdata[3],
-            'biography': userdata[4],
-            'nFollowings': userdata[5],
-            'nFollowers': userdata[6]
-        }
+    followers = None
+    if cursor.execute('SELECT id, username, email, avatar, biography FROM followers as f JOIN users as u ON f.user_id = u.id WHERE following_id = %s', (user_id,)):
+        followers = [
+            {
+                'id': x[0],
+                'username': x[1],
+                'email': x[2],
+                'avatar': x[3],
+                'biography': x[4]
+            } for x in cursor.fetchall()
+        ]
 
     cursor.close()
     conn.close()
 
-    if user:
+    if followers:
         return {
             'statusCode': 200,
             'headers': {'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps(user)
+            'body': json.dumps(followers)
         }
 
     return {
         'statusCode': 400,
         'headers': {'Access-Control-Allow-Origin': '*'},
-        'body': 'No user found'
+        'body': 'No followers found'
     }

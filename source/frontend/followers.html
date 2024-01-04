@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twotter</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .navbar, .footer {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e6ecf0;
+        }
+
+        .footer {
+            margin-top: 20px;
+            padding: 20px;
+            border-top: 1px solid #e6ecf0;
+            text-align: center;
+        }
+
+        .main-content, .sidebar, .feed {
+            margin-top: 20px;
+        }
+
+        .sidebar, .feed {
+            border-right: 1px solid #e6ecf0;
+        }
+
+        .trending {
+            padding: 10px;
+        }
+
+        .tweet-card, .reply {
+            background-color: #fff;
+            border: 1px solid #e1e8ed;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            padding: 10px;
+        }
+
+        .media, .media-body, .reply .media-body {
+            padding: 10px;
+        }
+
+        .tweet-avatar {
+            border-radius: 50%;
+        }
+
+        .tweet-username {
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .tweet-time {
+            font-size: 0.85rem;
+            color: #657786;
+        }
+
+        .tweet-message {
+            margin-top: 5px;
+        }
+
+        .reply {
+            background-color: #f7f7f7;
+            margin-left: 20px;
+            margin-right: 20px;
+        }
+
+        .modal-content {
+            background-color: #f8f9fa;
+        }
+
+        .modal-header, .modal-footer {
+            border: none;
+        }
+
+        .modal-title {
+            font-weight: normal;
+            font-size: 16px;
+        }
+
+        .modal-footer {
+            justify-content: flex-end;
+        }
+
+        .modal-footer .btn {
+            background-color: #1da1f2;
+            border: none;
+        }
+
+        .modal-footer .btn-secondary {
+            background-color: transparent;
+            color: #8899a6;
+        }
+
+        .btn-primary:focus, .btn-secondary:focus {
+            box-shadow: none;
+        }
+
+        .textarea {
+            resize: vertical;
+            max-height: 160px;
+        }
+    </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+            document.getElementById('search').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') search()
+            })
+        })
+
+        function timestamp_to_date(timestamp) {
+            // Create a new date object from the timestamp
+            // The timestamp is expected to be in seconds, JavaScript Date requires milliseconds
+            var date = new Date(timestamp * 1000);
+
+            // You can format the date however you prefer
+            var day = date.getDate();
+            var month = date.getMonth() + 1; // Months are zero-indexed in JavaScript
+            var year = date.getFullYear();
+            var hours = date.getHours();
+            var minutes = "0" + date.getMinutes();
+            var seconds = "0" + date.getSeconds();
+
+            return day + '/' + month + '/' + year + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
+        }
+
+        function cd_login() {
+            window.location.href = 'login.html'
+        }
+
+        function on_load() {
+            let lambda_view_user = 'https://afaeu2bysojgblo3t5dpajfabe0pghno.lambda-url.us-east-1.on.aws/',
+                lambda_followers = 'https://cng47wvnxoug4zfem4zsxht4eu0jytjz.lambda-url.us-east-1.on.aws/',
+                lambda_following = 'https://2twmzoilpnar2h5osukclrttue0fttvn.lambda-url.us-east-1.on.aws/'
+
+            fetch(lambda_view_user,
+                {
+                    method: 'POST',
+                    body: JSON.stringify({token: localStorage.getItem('token')})
+                }
+            )
+                .then(response => response.ok ? response.json() : "")
+                .then(response => {
+                    if (response === "") {
+                        logout()
+                        return
+                    }
+
+                    document.getElementById('profile').href = './profile.html?id=' + response.id
+                })
+
+            let urlParams = new URLSearchParams(window.location.search);
+            let formulario = {
+                user_id: urlParams.get('id') ? urlParams.get('id') : -1
+            }
+
+
+            fetch(urlParams.get('action') === "followers" ? lambda_followers : lambda_following,
+                {
+                    method: 'POST',
+                    body: JSON.stringify(formulario)
+                }
+            )
+                .then(response => response.ok ? response.json() : undefined)
+                .then(response => {
+                    if (response === undefined) {
+                        document.getElementById('titulo').innerHTML = urlParams.get('action') === "followers" ? "No followers" : "Not following anyone"
+                        return
+                    }
+                    document.getElementById('titulo').innerHTML = urlParams.get('action') === "followers" ? "Followers" : "Following"
+                    response.map((user => {
+                        document.getElementById('users').innerHTML += `
+                            <div class="profile-header-container my-3">
+                                <div class="row g-0 border rounded p-5" style="background-color: #fff;" onclick="window.location.href = './profile.html?id=${user.id}'">
+                                    <div class="col-md-auto text-center text-md-start">
+                                        <img src="${user.avatar}" class="align-self-start mr-3 tweet-avatar" alt="User Avatar" style="width: 48px;">
+                                    </div>
+                                    <div class="col-md">
+                                        <div class="px-3">
+                                            <div class="tweet-username" id="profile_username">${user.username}</div>
+                                            <div class="text-secondary">${user.biography}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            `
+                    }))
+                })
+        }
+
+        function logout() {
+            localStorage.removeItem('token')
+            cd_login()
+        }
+
+        function search() {
+            let url = './search.html?username=' + document.getElementById('search').value
+            window.location.href = url
+        }
+    </script>
+
+</head>
+<body class="d-flex flex-column" onload="on_load()">
+
+<nav class="sticky-top navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container">
+        <a class="navbar-brand" href="./home.html">Twotter</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Search Bar -->
+            <div class="mx-auto my-auto d-inline w-50">
+                <div class="input-group">
+                    <input type="text" class="form-control" id="search" placeholder="Search users..." aria-label="Search" aria-describedby="button-search">
+                </div>
+            </div>
+            <!-- Navigation Links -->
+            <ul class="navbar-nav ml-auto" id="navbar_elements">
+                <li class="nav-item">
+                    <a class="nav-link" id="profile" href="#">Profile</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" onclick="logout()">Log out</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container main-content">
+    <p id="titulo" class="display-3 text-center"></p>
+    <div class="row">
+        <div class="col" id="users"></div>
+    </div>
+</div>
+
+<footer class="footer mt-auto">
+    <div class="container">
+        <span>&copy; 2024 Twotter. All rights reserved.</span>
+    </div>
+</footer>
+
+<!-- Bootstrap JS, Popper.js, and jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+
+</body>
+</html>

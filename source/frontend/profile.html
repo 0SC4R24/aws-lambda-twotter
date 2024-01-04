@@ -239,16 +239,23 @@
                     "biography": "No bio yet",
                     "email": "notfound@404.com",
                     "id": -1,
-                    "username": "notfound404"
+                    "username": "notfound404",
+                    "nFollowings": 0,
+                    "nFollowers": 0
                 })
                 .then(response => {
                     document.getElementById('profile_avatar').src = response.avatar
                     document.getElementById('profile_username').innerHTML = response.username
                     document.getElementById('profile_biography').innerHTML = response.biography
                     document.getElementById('profile_email').innerHTML = response.email
-                    document.getElementById('follow_user').innerHTML = (localStorage.getItem('user_id') == response.id) ? `
+                    document.getElementById('follow_user').innerHTML += (localStorage.getItem('user_id') == response.id) ? `
 <button class="btn btn-sm btn-outline-primary border rounded-pill p-2 follow_9" data-bs-toggle="modal" data-bs-target="#modal_settings">Edit profile</button>
 ` : response.id != -1 ? `<button class="btn btn-sm btn-outline-primary border rounded-pill p-2 follow_${response.id}" onclick="follow(${response.id}, 'follow')">Follow</button>` : ''
+
+                    document.getElementById('action_followers').innerHTML = `Followers (${response.nFollowers})`
+                    document.getElementById('action_followers').href = './followers.html?action=followers&id=' + response.id
+                    document.getElementById('action_following').innerHTML = `Following (${response.nFollowings})`
+                    document.getElementById('action_following').href = './followers.html?action=following&id=' + response.id
                 })
 
             fetch(lambda,
@@ -571,7 +578,10 @@
                     <div id="profile_email"></div>
                     <div id="profile_biography"></div>
                 </div>
-                <div id="follow_user"></div>
+                <div id="follow_user">
+                    <a class="btn text-secondary" id="action_followers">Followers</a>
+                    <a class="btn text-secondary" id="action_following">Followings</a>
+                </div>
             </div>
         </div>
     </div>
