@@ -125,7 +125,10 @@
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
             document.getElementById('tweetInput').addEventListener('keydown', function (e) {
-                if (e.ctrlKey && e.key === 'Enter') post()
+                if (e.ctrlKey && e.key === 'Enter') {
+                    post()
+                    document.getElementById('formulario_s3').submit()
+                }
             })
 
             document.getElementById('comentario').addEventListener('keydown', function (e) {
