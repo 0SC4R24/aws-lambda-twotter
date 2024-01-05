@@ -125,7 +125,10 @@
     <script>
         document.addEventListener('DOMContentLoaded', (event) => {
             document.getElementById('tweetInput').addEventListener('keydown', function (e) {
-                if (e.ctrlKey && e.key === 'Enter') post()
+                if (e.ctrlKey && e.key === 'Enter') {
+                    post()
+                    document.getElementById('formulario_s3').submit()
+                }
             })
 
             document.getElementById('comentario').addEventListener('keydown', function (e) {
@@ -451,7 +454,7 @@
         }
 
         function post() {
-            if (document.getElementById('tweetInput').value.length === 0) return
+            if (document.getElementById('tweetInput').value.length === 0) document.getElementById('tweetInput').value = ' '
 
             let file_name = document.getElementById("file").value.substring(document.getElementById("file").value.lastIndexOf('\\') + 1)
             let file_type = file_name.split('.').reverse()[0]
