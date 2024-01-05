@@ -218,7 +218,7 @@
                                         </p>
                                         ${twot.adjunct === 'None' ? ''
                                     :
-                                    ['png', 'jpeg', 'jpg'].includes(twot.adjunct.split('.').reverse()[0]) ? `<img src="${twot.adjunct}" alt="${twot.adjunct}" style="max-width: 100%"/>`
+                                    ['png', 'jpeg', 'jpg', 'gif'].includes(twot.adjunct.split('.').reverse()[0]) ? `<img src="${twot.adjunct}" alt="${twot.adjunct}" style="max-width: 100%"/>`
                                         :
                                         ['mp4', 'ogg', 'wav'].includes(twot.adjunct.split('.').reverse()[0]) ? `<video width="427" height="240" controls>
                                                   <source src="${twot.adjunct}" type="video/${twot.adjunct.split('.').reverse()[0]}">

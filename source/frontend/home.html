@@ -253,7 +253,7 @@
                                         </p>
                                         ${twot.adjunct === 'None' ? ''
                             :
-                            ['png', 'jpeg', 'jpg'].includes(twot.adjunct.split('.').reverse()[0]) ? `<img src="${twot.adjunct}" alt="${twot.adjunct}" style="max-width: 100%"/>`
+                            ['png', 'jpeg', 'jpg', 'gif'].includes(twot.adjunct.split('.').reverse()[0]) ? `<img src="${twot.adjunct}" alt="${twot.adjunct}" style="max-width: 100%"/>`
                                 :
                                 ['mp4', 'ogg', 'wav'].includes(twot.adjunct.split('.').reverse()[0]) ? `<video width="427" height="240" controls>
                                                   <source src="${twot.adjunct}" type="video/${twot.adjunct.split('.').reverse()[0]}">
@@ -562,7 +562,7 @@
                             <input type="hidden" name="success_action_redirect" value="https://google.com"/>
                             <input type="hidden" name="X-Amz-Algorithm" value="AWS4-HMAC-SHA256"/>
                             <input type="hidden" id="X-Amz-Security-Token" name="X-Amz-Security-Token" value=""/>
-                            <input type="file" name="file" id="file" accept="video/mp4,image/png" style="display: none;">
+                            <input type="file" name="file" id="file" accept="video/mp4,image/png,image/gif" style="display: none;">
                             <label for="file" id="fileUpload" class="custom-file-upload">
                                 Upload File
                             </label>
