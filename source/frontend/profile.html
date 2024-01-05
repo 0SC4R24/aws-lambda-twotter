@@ -146,6 +146,19 @@
         .suggestion + .suggestion {
             margin-top: 15px; /* additional spacing */
         }
+
+        .custom-file-upload {
+            display: inline;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+        }
+
+        .custom-file-upload:hover {
+            background-color: #0056b3;
+        }
     </style>
 
     <script>
@@ -180,11 +193,28 @@
             return day + '/' + month + '/' + year + ' ' + hours + ':' + minutes.substr(-2) + ':' + seconds.substr(-2);
         }
 
+        function getAWSKeys() {
+            let asd = $.get(
+                "https://vtlewcvu5eh5q4jkdbieqateai0ypujg.lambda-url.us-east-1.on.aws/",
+                {},
+                function (data) {
+                    let json = data;
+                    document.getElementById("Policy").value = json.stringToSign;
+                    document.getElementById("X-Amz-Credential").value = json.xAmzCredential;
+                    document.getElementById("X-Amz-Date").value = json.amzDate;
+                    document.getElementById("X-Amz-Signature").value = json.stringSigned;
+                    document.getElementById("X-Amz-Security-Token").value = json.securityToken;
+                }
+            )
+        }
+
         function cd_login() {
             window.location.href = 'login.html'
         }
 
         function on_load() {
+            getAWSKeys()
+
             document.getElementById('navbar_elements').innerHTML = localStorage.getItem('token') ? `
             <li class="nav-item">
                     <a class="nav-link" id="profile" href="#">Profile</a>
@@ -446,10 +476,15 @@
         }
 
         function modificar() {
+            let file_name = document.getElementById("file").value.substring(document.getElementById("file").value.lastIndexOf('\\') + 1)
+            let file_type = file_name.split('.').reverse()[0]
+
+            document.getElementById("key").value = localStorage.getItem('user_id') + '/' + btoa(file_name).substring(0, 15) + '.' + file_type
+
             let lambda = 'https://mrjbtj2nkdzxqqjilbky7mgzjq0mixbi.lambda-url.us-east-1.on.aws/'
             let formulario = {
                 token: localStorage.getItem('token'),
-                avatar: document.getElementById('settings_avatar').src,
+                avatar: document.getElementById('file').value !== '' ? 'https://0sc4r24sisdis2024.s3.us-east-1.amazonaws.com/' + document.getElementById('key').value : document.getElementById('settings_avatar').src,
                 email: document.getElementById('settings_email').value,
                 biography: document.getElementById('settings_biography').value
             }
@@ -543,7 +578,21 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-2 d-flex flex-column">
-                        <img src="" id="settings_avatar" class="align-self-start mr-3 tweet-avatar" alt="User Avatar" style="width: 48px;">
+                        <form id="formulario_s3" action="https://0sc4r24sisdis2024.s3.us-east-1.amazonaws.com" onsubmit="modificar()" method="post" enctype="multipart/form-data">
+                            <input type="hidden" id="X-Amz-Credential" name="X-Amz-Credential" value=""/>
+                            <input type="hidden" id="X-Amz-Date" name="X-Amz-Date" value=""/>
+                            <input type="hidden" id="Policy" name="Policy" value=""/>
+                            <input type="hidden" id="X-Amz-Signature" name="X-Amz-Signature" value=""/>
+                            <input type="hidden" id="key" name="key" value=""/><br/>
+                            <input type="hidden" name="acl" value="public-read"/>
+                            <input type="hidden" name="success_action_redirect" value="https://0sc4r24sisdis2024.s3.amazonaws.com/home.html"/>
+                            <input type="hidden" name="X-Amz-Algorithm" value="AWS4-HMAC-SHA256"/>
+                            <input type="hidden" id="X-Amz-Security-Token" name="X-Amz-Security-Token" value=""/>
+                            <input type="file" name="file" id="file" accept="video/mp4,image/png,image/gif" style="display: none;">
+                            <label for="file" class="btn btn-primary m-0 custom-file-upload" id="fileUpload" style="background-color: transparent">
+                                <img src="" id="settings_avatar" class="align-self-start mr-3 tweet-avatar" alt="User Avatar" style="width: 48px;">
+                            </label>
+                        </form>
                     </div>
                     <div class="col">
                         <h3>Perfil de <span id="settings_username_span">USUARIO</span></h3>
@@ -568,7 +617,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="modificar()">Guardar</button>
+                <button type="submit" class="btn btn-primary" form="formulario_s3">Guardar</button>
             </div>
         </div>
     </div>
@@ -609,6 +658,7 @@
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+" crossorigin="anonymous"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 
 </body>
 </html>
