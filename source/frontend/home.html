@@ -459,7 +459,7 @@
             let file_name = document.getElementById("file").value.substring(document.getElementById("file").value.lastIndexOf('\\') + 1)
             let file_type = file_name.split('.').reverse()[0]
 
-            document.getElementById("key").value = localStorage.getItem('user_id') + '/' + btoa(file_name).substring(0, 15) + '.' + file_type
+            document.getElementById("key").value = localStorage.getItem('user_id') + '/' + btoa(file_name).substring(0, 8) + btoa(file_name).split('').reverse().join('').substring(0, 8) + '.' + file_type
 
             let lambda = 'https://3xt6za3jf5b5ceefrie2c4kasm0bzayq.lambda-url.us-east-1.on.aws/'
             let formulario = {
